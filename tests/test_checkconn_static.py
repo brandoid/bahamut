@@ -57,6 +57,10 @@ class CheckconnStaticTests(unittest.TestCase):
         self.assertIn('strpbrk(server1, "*?")', self.handler)
         self.assertIn('strpbrk(server2, "*?")', self.handler)
 
+    def test_local_second_endpoint_not_dispatched_twice(self):
+        self.assertIn("if (MyClient(sptr) && mycmp(me.name, server2))", self.handler)
+        self.assertNotIn("reverse_conn", self.handler)
+
     def test_no_network_probe_or_secrets(self):
         for forbidden in ("socket(", "connect(", "PASS %s", "cpasswd",
                           "apasswd", "do_server_estab("):

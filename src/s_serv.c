@@ -986,22 +986,7 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
      * Only the operator's home server dispatches the reverse request;
      * forwarded commands must not recursively dispatch another one.
      */
-    if (MyClient(sptr) && !mycmp(me.name, server2))
-    {
-        aConnect *reverse_conn = find_aConnect((char *)server1);
-        if (reverse_conn)
-        {
-            unsigned int reverse_port = portarg ? port :
-                (reverse_conn->port > 0 ? (unsigned int)reverse_conn->port :
-                 (unsigned int)PORTNUM);
-            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Local outbound connect block for %s exists (destination port %u); connectivity and authentication NOT VERIFIED.",
-                       me.name, parv[0], server1, reverse_port);
-        }
-        else
-            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: No local outbound connect block for %s; connectivity and authentication NOT VERIFIED.",
-                       me.name, parv[0], server1);
-    }
-    else if (MyClient(sptr))
+    if (MyClient(sptr) && mycmp(me.name, server2))
     {
         char *reverse[5];
 
@@ -1029,8 +1014,8 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
      * network.  The remote handler repeats the validation and reports
      * only its own local connect-block status.  No socket is opened.
      *
-     * This is intentionally one-way orchestration for now: the reverse
-     * test requires request correlation and a separate result protocol.
+     * These are independent read-only requests; correlated results and
+     * actual network preflight require a separate protocol.
      */
     if (mycmp(me.name, server1))
     {
