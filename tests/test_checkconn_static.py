@@ -48,6 +48,16 @@ class CheckconnStaticTests(unittest.TestCase):
         self.assertIn("hunt_server(cptr, sptr", self.handler)
         self.assertIn("HUNTED_ISME", self.handler)
 
+    def test_remote_routing_is_nonrecursive(self):
+        self.assertIn("if (mycmp(me.name, server1))", self.handler)
+        self.assertIn("if (hunted != HUNTED_ISME)", self.handler)
+        self.assertIn("return 0;", self.handler)
+
+    def test_no_network_probe_or_secrets(self):
+        for forbidden in ("socket(", "connect(", "PASS %s", "cpasswd",
+                          "apasswd", "do_server_estab("):
+            self.assertNotIn(forbidden, self.handler, forbidden)
+
     def test_does_not_claim_authentication_success(self):
         self.assertIn("NOT VERIFIED", self.handler)
         self.assertIn("no connections attempted", self.handler)
