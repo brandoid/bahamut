@@ -954,6 +954,17 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
         }
     }
 
+    /*
+     * Require exact server names.  hunt_server() accepts wildcards, but
+     * diagnostics must not silently target a different server.
+     */
+    if (strpbrk(server1, "*?") || strpbrk(server2, "*?"))
+    {
+        sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Exact server names required (no wildcards).",
+                   me.name, parv[0]);
+        return 0;
+    }
+
     if (!mycmp(server1, server2))
     {
         sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Servers must differ.",

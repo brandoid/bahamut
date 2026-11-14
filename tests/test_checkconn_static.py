@@ -53,6 +53,10 @@ class CheckconnStaticTests(unittest.TestCase):
         self.assertIn("if (hunted != HUNTED_ISME)", self.handler)
         self.assertIn("return 0;", self.handler)
 
+    def test_exact_server_targets_only(self):
+        self.assertIn('strpbrk(server1, "*?")', self.handler)
+        self.assertIn('strpbrk(server2, "*?")', self.handler)
+
     def test_no_network_probe_or_secrets(self):
         for forbidden in ("socket(", "connect(", "PASS %s", "cpasswd",
                           "apasswd", "do_server_estab("):
