@@ -35,3 +35,6 @@ src/ircd
 src/version.c.last
 tools/convert_conf
 tools/mkpasswd
+
+# Generated private CHECKCONN lab configurations and credentials
+tests/lab/generated/
