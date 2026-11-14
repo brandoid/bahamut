@@ -92,3 +92,5 @@ complete; transient network conditions and topology-specific checks may differ.
 This document is intentionally a specification rather than an untested
 partial implementation. The wire protocol and authentication design must be
 reviewed before modifying the daemon's connection state machine.
+
+Build validation: CI workflow is configured to run on pushes to feature/checkconn.
