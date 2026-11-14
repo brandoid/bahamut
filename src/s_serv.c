@@ -933,15 +933,19 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
 
     if (portarg)
     {
+        /* Validate before multiplication to avoid unsigned overflow. */
         for (p = portarg; *p; p++)
         {
+            unsigned int digit;
+
             if (*p < '0' || *p > '9')
                 break;
-            port = port * 10 + (unsigned int)(*p - '0');
-            if (port > 65535)
+            digit = (unsigned int)(*p - '0');
+            if (port > (65535U - digit) / 10U)
                 break;
+            port = port * 10U + digit;
         }
-        if (*p || !port || port > 65535)
+        if (*p || !port)
         {
             sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Invalid TCP port.",
                        me.name, parv[0]);
