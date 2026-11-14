@@ -35,7 +35,8 @@ class CheckconnStaticTests(unittest.TestCase):
         self.assertRegex(self.msg, r"\{MSG_CHECKCONN,\s*m_checkconn,")
 
     def test_permission_gate(self):
-        self.assertIn("IsPrivileged(sptr)", self.handler)
+        self.assertIn("IsAnOper(sptr)", self.handler)
+        self.assertNotIn("IsPrivileged(sptr)", self.handler)
         self.assertIn("OPCanGRoute(sptr)", self.handler)
 
     def test_no_real_link_registration(self):

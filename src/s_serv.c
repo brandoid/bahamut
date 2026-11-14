@@ -911,7 +911,8 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
     const char *p;
     unsigned int port = 0;
 
-    if (!IsPrivileged(sptr) || (MyClient(sptr) && !OPCanGRoute(sptr)))
+    /* CHECKCONN is an operator request, never a server-originated action. */
+    if (!IsAnOper(sptr) || (MyClient(sptr) && !OPCanGRoute(sptr)))
     {
         sendto_one(sptr, err_str(ERR_NOPRIVILEGES), me.name, parv[0]);
         return 0;
