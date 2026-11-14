@@ -955,14 +955,51 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
     }
 
     /*
-     * Require exact server names.  hunt_server() accepts wildcards, but
-     * diagnostics must not silently target a different server.
+     * Accept the usual IRC server masks, but resolve each to exactly one
+     * registered server before routing.  hunt_server() chooses the first
+     * wildcard match, which is unsafe for a targeted diagnostic.
      */
     if (strpbrk(server1, "*?") || strpbrk(server2, "*?"))
     {
-        sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Exact server names required (no wildcards).",
-                   me.name, parv[0]);
-        return 0;
+        const char *patterns[2];
+        int idx;
+
+        patterns[0] = server1;
+        patterns[1] = server2;
+        for (idx = 0; idx < 2; idx++)
+        {
+            aClient *acptr, *resolved = NULL;
+            int count = 0;
+
+            if (!strpbrk(patterns[idx], "*?"))
+                continue;
+            for (acptr = client; acptr; acptr = acptr->next)
+            {
+                if (!IsServer(acptr) || match(patterns[idx], acptr->name))
+                    continue;
+                resolved = acptr;
+                count++;
+                if (count > 1)
+                    break;
+            }
+            /* The local server may not appear in the global client list. */
+            if (!match(patterns[idx], me.name))
+            {
+                count++;
+                if (count == 1)
+                    resolved = &me;
+            }
+            if (count != 1)
+            {
+                sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Server mask %s matches %s; use a more specific name.",
+                           me.name, parv[0], patterns[idx],
+                           count ? "multiple servers" : "no servers");
+                return 0;
+            }
+            parv[idx == 0 ? 1 : (portarg ? 3 : 2)] = resolved->name;
+        }
+        server1 = parv[1];
+        server2 = parv[portarg ? 3 : 2];
     }
 
     if (!mycmp(server1, server2))

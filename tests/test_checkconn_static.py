@@ -53,9 +53,11 @@ class CheckconnStaticTests(unittest.TestCase):
         self.assertIn("if (hunted != HUNTED_ISME)", self.handler)
         self.assertIn("return 0;", self.handler)
 
-    def test_exact_server_targets_only(self):
+    def test_wildcard_server_targets_are_unambiguous(self):
         self.assertIn('strpbrk(server1, "*?")', self.handler)
         self.assertIn('strpbrk(server2, "*?")', self.handler)
+        self.assertIn('count != 1', self.handler)
+        self.assertIn('resolved->name', self.handler)
 
     def test_local_second_endpoint_not_dispatched_twice(self):
         self.assertIn("if (MyClient(sptr) && mycmp(me.name, server2))", self.handler)
