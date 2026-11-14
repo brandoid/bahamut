@@ -975,7 +975,22 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
      * Only the operator's home server dispatches the reverse request;
      * forwarded commands must not recursively dispatch another one.
      */
-    if (MyClient(sptr))
+    if (MyClient(sptr) && !mycmp(me.name, server2))
+    {
+        aConnect *reverse_conn = find_aConnect((char *)server1);
+        if (reverse_conn)
+        {
+            unsigned int reverse_port = portarg ? port :
+                (reverse_conn->port > 0 ? (unsigned int)reverse_conn->port :
+                 (unsigned int)PORTNUM);
+            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Local outbound connect block for %s exists (destination port %u); connectivity and authentication NOT VERIFIED.",
+                       me.name, parv[0], server1, reverse_port);
+        }
+        else
+            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: No local outbound connect block for %s; connectivity and authentication NOT VERIFIED.",
+                       me.name, parv[0], server1);
+    }
+    else if (MyClient(sptr))
     {
         char *reverse[5];
 
