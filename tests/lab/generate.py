@@ -34,8 +34,8 @@ def main():
     host 127.0.0.1;
     port {other_port};
     bind 127.0.0.1;
-    apasswd "{passwords[name]}";
-    cpasswd "{passwords[other]}";
+    apasswd "{passwords[other]}";
+    cpasswd "{passwords[name]}";
     flags H;
     class servers;
 }};""")
