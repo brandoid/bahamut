@@ -1064,16 +1064,16 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
             unsigned int destport = portarg ? port :
                                     (aconn->port > 0 ? (unsigned int)aconn->port :
                                      (unsigned int)PORTNUM);
-            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Local outbound connect block for %s exists (destination port %u); connectivity and authentication NOT VERIFIED.",
-                       me.name, parv[0], peer, destport);
+            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: %s -> %s: outbound connect block present (destination port %u); connectivity and authentication NOT VERIFIED.",
+                       me.name, parv[0], me.name, peer, destport);
         }
         else
-            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: No local outbound connect block for %s; connectivity and authentication NOT VERIFIED.",
-                       me.name, parv[0], peer);
+            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: %s -> %s: outbound connect block MISSING; connectivity and authentication NOT VERIFIED.",
+                       me.name, parv[0], me.name, peer);
     }
 
-    sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Remote diagnostics not implemented; no connections attempted.",
-               me.name, parv[0]);
+    sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: %s -> %s: TCP connectivity and authentication NOT VERIFIED; no connections attempted.",
+               me.name, parv[0], server1, server2);
     return 0;
 }
 
