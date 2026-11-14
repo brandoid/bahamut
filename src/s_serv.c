@@ -968,7 +968,30 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
         return 0;
     }
 
-    sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Diagnostic handshake not implemented yet; no connections attempted.",
+    /*
+     * Local, read-only configuration inspection is safe even while the
+     * network-wide probe protocol remains unimplemented.  This reports
+     * only connect-block presence and destination port; it does not
+     * inspect, compare or reveal credentials.
+     */
+    if (!mycmp(me.name, server1) || !mycmp(me.name, server2))
+    {
+        const char *peer = !mycmp(me.name, server1) ? server2 : server1;
+        aConnect *aconn = find_aConnect((char *)peer);
+        if (aconn)
+        {
+            unsigned int destport = portarg ? port :
+                                    (aconn->port > 0 ? (unsigned int)aconn->port :
+                                     (unsigned int)PORTNUM);
+            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Local outbound connect block for %s exists (destination port %u); connectivity and authentication NOT VERIFIED.",
+                       me.name, parv[0], peer, destport);
+        }
+        else
+            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: No local outbound connect block for %s; connectivity and authentication NOT VERIFIED.",
+                       me.name, parv[0], peer);
+    }
+
+    sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Remote diagnostics not implemented; no connections attempted.",
                me.name, parv[0]);
     return 0;
 }
