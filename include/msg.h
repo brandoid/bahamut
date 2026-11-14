@@ -43,6 +43,7 @@
 #define MSG_HELP     "HELP"	   	/* HELP */
 #define MSG_ERROR    "ERROR"	   	/* ERRO */
 #define MSG_AWAY     "AWAY"	   	/* AWAY */
+#define MSG_CHECKCONN "CHECKCONN"        /* diagnostic, not a link */
 #define MSG_CONNECT  "CONNECT"		/* CONN */
 #define MSG_PING     "PING"	   	/* PING */
 #define MSG_PONG     "PONG"	   	/* PONG */
@@ -179,6 +180,7 @@ extern int  m_help(aClient *, aClient *, int, char **);
 extern int  m_squit(aClient *, aClient *, int, char **);
 extern int  m_away(aClient *, aClient *, int, char **);
 extern int  m_connect(aClient *, aClient *, int, char **);
+extern int  m_checkconn(aClient *, aClient *, int, char **);
 extern int  m_oper(aClient *, aClient *, int, char **);
 extern int  m_pass(aClient *, aClient *, int, char **);
 extern int  m_trace(aClient *, aClient *, int, char **);
@@ -305,6 +307,7 @@ struct Message msgtab[] =
     {MSG_TIME,     m_time,     MAXPARA, 0,        0},
     {MSG_OPER,     m_oper,     MAXPARA, 0,        0},
     {MSG_CONNECT,  m_connect,  MAXPARA, 0,        0},
+    {MSG_CHECKCONN, m_checkconn, MAXPARA, 0,      0},
     {MSG_VERSION,  m_version,  MAXPARA, MF_UNREG, 0},
     {MSG_STATS,    m_stats,    MAXPARA, 0,        0},
     {MSG_LINKS,    m_links,    MAXPARA, 0,        0},

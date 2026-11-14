@@ -893,6 +893,82 @@ int send_lusers(aClient *cptr, aClient *sptr, int parc, char *parv[])
     return 0;
 }
 
+/*
+ * CHECKCONN command entry point.
+ *
+ * Deliberately does not initiate a socket connection yet.  A regular
+ * connect_server() call would attempt real server registration, which
+ * must never be used as a diagnostic on a live network.
+ *
+ * A future implementation will route bounded diagnostic requests to
+ * each endpoint and use an explicitly separate preflight handshake.
+ */
+int
+m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
+{
+    const char *server1, *server2;
+    const char *portarg = NULL;
+    const char *p;
+    unsigned int port = 0;
+
+    if (!IsPrivileged(sptr) || (MyClient(sptr) && !OPCanGRoute(sptr)))
+    {
+        sendto_one(sptr, err_str(ERR_NOPRIVILEGES), me.name, parv[0]);
+        return 0;
+    }
+
+    if ((parc != 3 && parc != 4) ||
+        BadPtr(parv[1]) || BadPtr(parv[2]) ||
+        (parc == 4 && BadPtr(parv[3])))
+    {
+        sendto_one(sptr, err_str(ERR_NEEDMOREPARAMS),
+                   me.name, parv[0], "CHECKCONN");
+        return 0;
+    }
+
+    server1 = parv[1];
+    server2 = (parc == 4) ? parv[3] : parv[2];
+    if (parc == 4)
+        portarg = parv[2];
+
+    if (portarg)
+    {
+        for (p = portarg; *p; p++)
+        {
+            if (*p < '0' || *p > '9')
+                break;
+            port = port * 10 + (unsigned int)(*p - '0');
+            if (port > 65535)
+                break;
+        }
+        if (*p || !port || port > 65535)
+        {
+            sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Invalid TCP port.",
+                       me.name, parv[0]);
+            return 0;
+        }
+    }
+
+    if (!mycmp(server1, server2))
+    {
+        sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Servers must differ.",
+                   me.name, parv[0]);
+        return 0;
+    }
+
+    if (!find_server((char *)server1, NULL) ||
+        !find_server((char *)server2, NULL))
+    {
+        sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Both servers must be present on the network.",
+                   me.name, parv[0]);
+        return 0;
+    }
+
+    sendto_one(sptr, ":%s NOTICE %s :CHECKCONN: Diagnostic handshake not implemented yet; no connections attempted.",
+               me.name, parv[0]);
+    return 0;
+}
+
 /***********************************************************************
  * m_connect() - Added by Jto 11 Feb 1989
  ***********************************************************************/
