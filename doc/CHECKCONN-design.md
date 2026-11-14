@@ -94,3 +94,31 @@ partial implementation. The wire protocol and authentication design must be
 reviewed before modifying the daemon's connection state machine.
 
 Build validation: CI workflow is configured to run on pushes to feature/checkconn.
+
+## Source audit: socket and registration boundaries
+
+Inspected on the feature branch after the first successful C/C++ CI build:
+
+- `src/s_bsd.c:accept_connection` accepts inbound sockets and delegates
+  registration to `add_connection`.
+- `src/s_bsd.c:read_packet` processes received data through the normal
+  client input path; diagnostic sockets must not accidentally enter this
+  parser as ordinary unknown clients.
+- `src/s_bsd.c:completed_connection` handles outbound completion.
+- `src/s_bsd.c:connect_server` is the normal outbound server-link entry
+  point and MUST NOT be called by the preflight implementation as-is.
+- `src/m_server.c:m_server_estab` performs password, duplicate-server,
+  leaf/hub, and registration checks; `do_server_estab` is the forbidden
+  side-effect boundary for diagnostic traffic.
+
+Implementation gate: before enabling any network probe, define how an
+inbound diagnostic session is distinguished *before* ordinary server
+registration and how the outbound diagnostic socket is represented in the
+existing event loop. Keep this opt-in on both peers; reject unsupported
+peers without falling back to PASS/SERVER. Review authentication design
+separately to avoid introducing a credential-testing oracle.
+
+The existing CHECKCONN command is currently only a parser plus local
+read-only connect-block inspection; it does not implement remote routing
+or live connectivity checks. Do not represent its output as a successful
+preflight.
