@@ -970,6 +970,31 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
     }
 
     /*
+     * Route the operator request to server1 over the existing server
+     * network.  The remote handler repeats the validation and reports
+     * only its own local connect-block status.  No socket is opened.
+     *
+     * This is intentionally one-way orchestration for now: the reverse
+     * test requires request correlation and a separate result protocol.
+     */
+    if (mycmp(me.name, server1))
+    {
+        int hunted;
+
+        if (portarg)
+            hunted = hunt_server(cptr, sptr,
+                                 ":%s CHECKCONN %s %s :%s",
+                                 1, parc, parv);
+        else
+            hunted = hunt_server(cptr, sptr,
+                                 ":%s CHECKCONN %s :%s",
+                                 1, parc, parv);
+
+        if (hunted != HUNTED_ISME)
+            return 0;
+    }
+
+    /*
      * Local, read-only configuration inspection is safe even while the
      * network-wide probe protocol remains unimplemented.  This reports
      * only connect-block presence and destination port; it does not
