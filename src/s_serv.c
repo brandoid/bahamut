@@ -970,6 +970,35 @@ m_checkconn(aClient *cptr, aClient *sptr, int parc, char *parv[])
     }
 
     /*
+     * Until the correlated probe protocol is implemented, collect both
+     * endpoints' independent, read-only connect-block inspections.
+     * Only the operator's home server dispatches the reverse request;
+     * forwarded commands must not recursively dispatch another one.
+     */
+    if (MyClient(sptr))
+    {
+        char *reverse[5];
+
+        reverse[0] = parv[0];
+        reverse[1] = (char *)server2;
+        if (portarg)
+        {
+            reverse[2] = (char *)portarg;
+            reverse[3] = (char *)server1;
+            reverse[4] = NULL;
+            hunt_server(cptr, sptr, ":%s CHECKCONN %s %s :%s",
+                        1, 4, reverse);
+        }
+        else
+        {
+            reverse[2] = (char *)server1;
+            reverse[3] = NULL;
+            hunt_server(cptr, sptr, ":%s CHECKCONN %s :%s",
+                        1, 3, reverse);
+        }
+    }
+
+    /*
      * Route the operator request to server1 over the existing server
      * network.  The remote handler repeats the validation and reports
      * only its own local connect-block status.  No socket is opened.
