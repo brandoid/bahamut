@@ -1,0 +1,15 @@
+name: CHECKCONN safety checks
+
+on:
+  push:
+    branches: [ feature/checkconn ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run CHECKCONN static guardrails
+        run: python3 tests/test_checkconn_static.py
