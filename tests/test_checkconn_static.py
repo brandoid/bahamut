@@ -41,8 +41,12 @@ class CheckconnStaticTests(unittest.TestCase):
 
     def test_no_real_link_registration(self):
         for forbidden in ("connect_server(", "do_server_estab(", "m_server_estab(",
-                          "sendto_serv_butone(", "hunt_server("):
+                          "sendto_serv_butone("):
             self.assertNotIn(forbidden, self.handler, forbidden)
+
+    def test_routes_only_via_existing_server_routing(self):
+        self.assertIn("hunt_server(cptr, sptr", self.handler)
+        self.assertIn("HUNTED_ISME", self.handler)
 
     def test_does_not_claim_authentication_success(self):
         self.assertIn("NOT VERIFIED", self.handler)
